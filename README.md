@@ -74,3 +74,6 @@ Group Members and Roles
 
 Troubleshooting
 - If connection issues arise, check firewall settings and ensure that the server IP address is correctly configured in the agent script.
+
+## Notes
+We could not fix the encryption method and it is affecting our project. Please consider these during evaluation.
