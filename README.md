@@ -9,7 +9,7 @@ Server
 The server script (`server.py`) listens for incoming connections from agents and provides a menu-driven interface for interacting with connected agents.
 
 Dependencies
-- Python 3.x
+- Python 3. x
 
 Running the Server
 1. Open a terminal.
@@ -24,18 +24,18 @@ Running the Server
 
 Usage
 - Upon connection, the server will prompt for an Agent ID, and then present a menu with options:
-  - `1`: Download File
-  - `2`: Access PowerShell
-  - `3`: Upload File  
- - `4`: View Online Agents
-  - `5`: View Agent Activities
-  - `exit`: Exit
+- `1`: Download File
+- `2`: Access PowerShell
+- `3`: Upload File  
+- `4`: View Online Agents
+- `5`: View Agent Activities
+- `exit`: Exit
 
 - For option `1`, enter the file path on the client to download.
 
 - For option `2`, enter PowerShell commands to execute on the client.
 
-- For option `3`, for uploading file.
+- For option `3`, for uploading files.
 
 - For options `4` and `5`, view online agents and agent activities, respectively.
 
@@ -45,7 +45,7 @@ Agent
 The agent script (`agent.py`) connects to the server, sends its Agent ID, and executes commands received from the server.
 
 Dependencies
-- Python 3.x
+- Python 3. x
 
 Running the Agent
 1. Open a terminal.
@@ -57,17 +57,17 @@ Running the Agent
     python agent.py
     ```
 
-5. The agent will connect to the specified server IP address (`192.168.72.177`) and port (`1234`).
-You need to customize for your server IP.
+5. The agent will connect to the specified server IP address (`YOUR_IP_ADDRESS`) and port (`1234`).
+You need to customize your server IP.
 
 Usage
 - The agent will execute commands received from the server.
 
 Group Members and Roles
-Nurbala : Software Engineer
-Mirmusa :  Software Developer
-Ogtay : Project Manager
-Murad :  Project Manager
+ - Nurbala : Software Engineer
+ - Mirmusa:  Software Developer
+ - Ogtay : Project Manager
+ - Murad:  Project Manager
 ## Additional Remarks
 - The upload feature in the server script is not implemented and can be added based on project requirements.
 - Ensure that both the server and agent have the necessary permissions to perform file operations and execute commands.
