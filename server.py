@@ -2,6 +2,17 @@ import socket
 import os
 from datetime import datetime
 
+def upload_file(client_socket, file_path):
+    try:
+        send_file(client_socket, file_path)
+        track_agent_activity(agent_id, f"Uploaded file: {file_path}")
+        # Send a signal to the client indicating that the file upload is complete
+        client_socket.send("File upload complete".encode('utf-8'))
+    except Exception as e:
+        print(f"Error uploading file: {e}")
+        
+        
+
 
 def receive_file(client_socket, file_path):
     save_directory = r"C:\Users\User\OneDrive\Desktop"  # Specify the directory where you want to save the file
@@ -140,8 +151,15 @@ def main():
         elif choice == '3':
             file_path = input("Enter the full path of the file to upload: ").replace('"', '')
             client_socket.send(f"send {file_path}".encode('utf-8'))
-            send_file(client_socket, file_path)
-            track_agent_activity(agent_id, f"Uploaded file: {file_path}")
+            upload_file(client_socket, file_path)  # Call the new function
+            # Wait for acknowledgment from the client that file upload is complete
+            acknowledgment = client_socket.recv(4096).decode('utf-8')
+            print(acknowledgment)
+            if acknowledgment == "File upload complete":
+                continue  # Proceed to the next iteration
+            else:  
+                 print("Error receiving file acknowledgment.")
+            break
         elif choice == '4':
             view_online_agents()
         elif choice == '5':
