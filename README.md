@@ -9,7 +9,7 @@ Server
 The server script (`server.py`) listens for incoming connections from agents and provides a menu-driven interface for interacting with connected agents.
 
 Dependencies
-- Python 3. x
+- Check `requirements.txt` file.
 
 Running the Server
 1. Open a terminal.
@@ -29,6 +29,7 @@ Usage
 - `3`: Upload File  
 - `4`: View Online Agents
 - `5`: View Agent Activities
+- `6`: Retrieve Location Details
 - `exit`: Exit
 
 - For option `1`, enter the file path on the client to download.
@@ -39,13 +40,15 @@ Usage
 
 - For options `4` and `5`, view online agents and agent activities, respectively.
 
+- For option `6`, view geolocation detail of agent based on its IP address.
+
 - `exit`: Terminate the connection.
 
 Agent
 The agent script (`agent.py`) connects to the server, sends its Agent ID, and executes commands received from the server.
 
 Dependencies
-- Python 3. x
+- Python 3.9
 
 Running the Agent
 1. Open a terminal.
@@ -65,9 +68,9 @@ Usage
 
 Group Members and Roles
  - Nurbala : Software Engineer
- - Mirmusa:  Software Developer
- - Ogtay : Project Manager
- - Murad:  Project Manager
+ - Mirmusa:  Developer & Tester
+ - Ogtay : Project Manager Tester
+ - Murad:  Tester
 ## Additional Remarks
 - The upload feature in the server script is not implemented and can be added based on project requirements.
 - Ensure that both the server and agent have the necessary permissions to perform file operations and execute commands.

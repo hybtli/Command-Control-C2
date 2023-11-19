@@ -1,14 +1,23 @@
+import gzip
 import os
 
-'''
-def upload_file(client_socket, file_path, agent_id):
+
+def compress_data(data):
     try:
-        send_file(client_socket, file_path)
-        # Send a signal to the client indicating that the file upload is complete
-        client_socket.send("File upload complete".encode('utf-8'))
+        with gzip.compress(data) as compressed_data:
+            return compressed_data
     except Exception as e:
-        print(f"Error uploading file: {e}")
-'''
+        print(f"Compression error: {e}")
+        return None
+
+
+def decompress_data(compressed_data):
+    try:
+        with gzip.decompress(compressed_data) as decompressed_data:
+            return decompressed_data
+    except Exception as e:
+        print(f"Decompression error: {e}")
+        return None
 
 
 def receive_file_from_client(client_socket, file_path):
@@ -92,32 +101,3 @@ def receive_file_from_server(client_socket, file_path):
     # Return False if there was an issue with file processing
     return False
 
-
-'''
-def send_file(client_socket, file_path):
-    try:
-        with open(file_path, 'rb') as file:
-            file_data = file.read()
-
-        client_socket.send(file_data)
-        print(f"File sent successfully: {file_path}")
-
-        acknowledgment = client_socket.recv(4096).decode('utf-8')
-        print(acknowledgment)
-
-        if acknowledgment == "File received successfully":
-            client_socket.send("next_menu".encode('utf-8'))
-            return True
-        else:
-            print("Error receiving file acknowledgment.")
-            return False
-
-    except FileNotFoundError:
-        print(f"File not found: {file_path}")
-        client_socket.send(f"File not found: {file_path}".encode('utf-8'))
-        return False
-
-    except Exception as e:
-        print(f"Error sending file: {e}")
-        return False
-'''

