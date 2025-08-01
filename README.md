@@ -66,11 +66,6 @@ You need to customize your server IP.
 Usage
 - The agent will execute commands received from the server.
 
-Group Members and Roles
- - Nurbala : Software Engineer
- - Mirmusa:  Developer & Tester
- - Ogtay : Project Manager Tester
- - Murad:  Tester
 ## Additional Remarks
 - The upload feature in the server script is not implemented and can be added based on project requirements.
 - Ensure that both the server and agent have the necessary permissions to perform file operations and execute commands.
